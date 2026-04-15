@@ -42,14 +42,31 @@ app.get('/api/reservas', async (req, res) => {
   } catch (err) { res.status(500).json({ error: "Error al obtener reservas", detail: err.message }); }
 });
 
+// POST Reservas corregido para evitar error 500 por valores nulos
 app.post('/api/reservas', async (req, res) => {
   try {
     const { id_mesa, id_mozo, dni_cliente, nombre_cliente, apellido_cliente, telefono_cliente, fecha_reserva, hora_reserva, observacion } = req.body;
+    
     const sql = `INSERT INTO reservas (id_mesa, id_mozo, dni_cliente, nombre_cliente, apellido_cliente, telefono_cliente, fecha_reserva, hora_reserva, observacion, estado_reserva) 
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pendiente')`;
-    await pool.query(sql, [id_mesa, id_mozo, dni_cliente, nombre_cliente, apellido_cliente, telefono_cliente, fecha_reserva, hora_reserva, observacion]);
+    
+    // Usamos cortocircuitos (|| null/empty) para que la DB no rechace el insert
+    await pool.query(sql, [
+        id_mesa, 
+        id_mozo || null, 
+        dni_cliente, 
+        nombre_cliente, 
+        apellido_cliente || '', 
+        telefono_cliente || '', 
+        fecha_reserva, 
+        hora_reserva, 
+        observacion || ''
+    ]);
     res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { 
+    console.error("Error en Reserva:", err);
+    res.status(500).json({ error: "Error al insertar reserva", detail: err.message }); 
+  }
 });
 
 app.put('/api/reservas/:id/checkin', async (req, res) => {
@@ -57,6 +74,21 @@ app.put('/api/reservas/:id/checkin', async (req, res) => {
     await pool.query("UPDATE reservas SET estado_reserva = 'confirmada' WHERE id_reserva = ?", [req.params.id]);
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Endpoint para asignar mozo (Solución error 404)
+app.get('/api/asignar-mozo', async (req, res) => {
+    try {
+      const sql = `
+        SELECT u.id_usuario, u.nombre 
+        FROM usuarios u 
+        WHERE u.rol = 'mozo' AND u.estado = 1 
+        LIMIT 1`; 
+      const [rows] = await pool.query(sql);
+      rows.length > 0 
+        ? res.json({ success: true, mozo: rows[0] }) 
+        : res.json({ success: false, message: "No hay mozos disponibles" });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.get('/api/usuarios/mozos', async (req, res) => {
@@ -244,6 +276,7 @@ app.put('/api/admin/productos/:id', async (req, res) => {
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+
 // --- CREAR PRODUCTO NUEVO (POST) ---
 app.post('/api/admin/productos', async (req, res) => {
   const { nombre, precio, categoria, tiempo_estimado } = req.body;
@@ -257,9 +290,9 @@ app.post('/api/admin/productos', async (req, res) => {
     res.status(500).json({ error: "Error al crear producto", detail: err.message });
   }
 });
+
 // --- GESTIÓN DE USUARIOS (NUEVAS RUTAS) ---
 
-// Obtener lista
 app.get('/api/admin/usuarios', async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT id_usuario, nombre, usuario, rol, estado FROM usuarios");
@@ -267,7 +300,6 @@ app.get('/api/admin/usuarios', async (req, res) => {
   } catch (err) { res.status(500).json(err); }
 });
 
-// Crear nuevo (REGISTRAR)
 app.post('/api/admin/usuarios', async (req, res) => {
   const { nombre, usuario, password, rol } = req.body;
   try {
@@ -279,7 +311,6 @@ app.post('/api/admin/usuarios', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Actualizar completo (EDITAR)
 app.put('/api/admin/usuarios/:id', async (req, res) => {
   const { id } = req.params;
   const { nombre, usuario, rol } = req.body;
@@ -292,7 +323,6 @@ app.put('/api/admin/usuarios/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Borrar
 app.delete('/api/admin/usuarios/:id', async (req, res) => {
   try {
     await pool.query("DELETE FROM usuarios WHERE id_usuario = ?", [req.params.id]);
@@ -300,7 +330,6 @@ app.delete('/api/admin/usuarios/:id', async (req, res) => {
   } catch (err) { res.status(500).json(err); }
 });
 
-// Cambiar estado individual
 app.put('/api/admin/usuarios/:id/estado', async (req, res) => {
   try {
     await pool.query("UPDATE usuarios SET estado = ? WHERE id_usuario = ?", [req.body.estado, req.params.id]);
