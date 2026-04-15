@@ -3,18 +3,22 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Creamos la configuración basándonos en si existe la URL completa o variables separadas
-const dbConfig = process.env.DATABASE_URL || {
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '1234',
-  database: process.env.DB_NAME || 'restaurante_wayra1',
+// Creamos un objeto con la configuración
+const dbConfig = {
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   port: parseInt(process.env.DB_PORT) || 3306,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
 };
 
-const pool = mysql.createPool(dbConfig);
+// Si por alguna razón Render no lee las variables individuales, 
+// intentamos usar la URL completa si existe.
+const pool = process.env.DATABASE_URL 
+  ? mysql.createPool(process.env.DATABASE_URL) 
+  : mysql.createPool(dbConfig);
 
 export default pool;
