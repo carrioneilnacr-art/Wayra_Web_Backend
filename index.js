@@ -244,7 +244,19 @@ app.put('/api/admin/productos/:id', async (req, res) => {
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
-
+// --- CREAR PRODUCTO NUEVO (POST) ---
+app.post('/api/admin/productos', async (req, res) => {
+  const { nombre, precio, categoria, tiempo_estimado } = req.body;
+  try {
+    const sql = `INSERT INTO productos (nombre, precio, categoria, tiempo_estimado, estado) 
+                 VALUES (?, ?, ?, ?, 1)`;
+    await pool.query(sql, [nombre, precio, categoria, tiempo_estimado]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error al crear producto:", err);
+    res.status(500).json({ error: "Error al crear producto", detail: err.message });
+  }
+});
 // --- GESTIÓN DE USUARIOS (NUEVAS RUTAS) ---
 
 // Obtener lista
