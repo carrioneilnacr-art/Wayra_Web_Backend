@@ -28,7 +28,6 @@ app.post('/api/login', async (req, res) => {
 // 📅 MÓDULO DE RECEPCIÓN (RESERVAS)
 // ==========================================
 
-// Obtener reservas por fecha (Mejorado para el Dashboard)
 app.get('/api/reservas', async (req, res) => {
   const { fecha } = req.query;
   try {
@@ -43,7 +42,6 @@ app.get('/api/reservas', async (req, res) => {
   } catch (err) { res.status(500).json({ error: "Error al obtener reservas", detail: err.message }); }
 });
 
-// Crear o Actualizar Reserva con id_mozo asignado
 app.post('/api/reservas', async (req, res) => {
   try {
     const { id_mesa, id_mozo, dni_cliente, nombre_cliente, apellido_cliente, telefono_cliente, fecha_reserva, hora_reserva, observacion } = req.body;
@@ -54,7 +52,6 @@ app.post('/api/reservas', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Check-in: Cuando llega el cliente (Dispara el aviso al Mozo)
 app.put('/api/reservas/:id/checkin', async (req, res) => {
   try {
     await pool.query("UPDATE reservas SET estado_reserva = 'confirmada' WHERE id_reserva = ?", [req.params.id]);
@@ -62,7 +59,6 @@ app.put('/api/reservas/:id/checkin', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Obtener solo mozos activos (Para el selector del ModalReserva)
 app.get('/api/usuarios/mozos', async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT id_usuario, nombre FROM usuarios WHERE rol = 'mozo' AND estado = 1");
@@ -78,15 +74,8 @@ app.get('/api/mesas', async (req, res) => {
     const [results] = await pool.query("SELECT * FROM mesas");
     res.json(results);
   } catch (err) {
-    // Esto enviará el error real a la consola de Render
     console.error("❌ ERROR CRÍTICO EN DB:", err);
-    
-    // Esto te mostrará el error real en el navegador para que no adivinemos
-    res.status(500).json({ 
-      error: "Error al obtener mesas", 
-      detalle: err.message,
-      codigo: err.code 
-    }); 
+    res.status(500).json({ error: "Error al obtener mesas", detalle: err.message }); 
   }
 });
 
@@ -98,18 +87,16 @@ app.put('/api/mesas/:id/liberar', async (req, res) => {
 });
 
 // ==========================================
-// 🍣 MÓDULO DEL MOZO (RESERVAS ASIGNADAS Y PEDIDOS)
+// 🍣 MÓDULO DEL MOZO (RESERVAS Y PEDIDOS)
 // ==========================================
 
-// Reservas de hoy para un mozo específico (Carrusel del MonitorPedidos)
 app.put('/api/reservas/:id/anular', async (req, res) => {
   try {
     await pool.query("UPDATE reservas SET estado_reserva = 'cancelada' WHERE id_reserva = ?", [req.params.id]);
     res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
+
 app.get('/api/reservas/hoy', async (req, res) => {
   const { id_mozo } = req.query;
   try {
@@ -166,7 +153,6 @@ app.post('/api/pedidos', async (req, res) => {
   }
 });
 
-// --- EDICIÓN Y DETALLES ---
 app.post('/api/pedidos/:id/agregar', async (req, res) => {
   try {
     await pool.query("INSERT INTO pedido_detalle (id_pedido, id_producto, cantidad, subtotal) VALUES (?, ?, ?, ?)", [req.params.id, req.body.id_producto, req.body.cantidad, req.body.subtotal]);
@@ -194,7 +180,7 @@ app.put('/api/pedidos/:id/observacion', async (req, res) => {
 });
 
 // ==========================================
-// 💳 PAGOS Y CIERRE (CHECKOUT UNIFICADO)
+// 💳 PAGOS Y CIERRE
 // ==========================================
 app.put('/api/pedidos/:id/checkout', async (req, res) => {
   const { id } = req.params;
@@ -224,145 +210,91 @@ app.put('/api/pedidos/:id/checkout', async (req, res) => {
 });
 
 // ==========================================
-// 🧠 ALGORITMO DE ASIGNACIÓN AUTOMÁTICA
-// ==========================================
-app.get('/api/asignar-mozo', async (req, res) => {
-  try {
-    const sql = `
-      SELECT u.id_usuario, u.nombre, COUNT(p.id_pedido) as carga_actual
-      FROM usuarios u
-      LEFT JOIN pedidos p ON u.id_usuario = p.id_mozo AND p.estado_pedido != 'PAGADO'
-      WHERE u.rol = 'mozo' AND u.estado = 1
-      GROUP BY u.id_usuario
-      HAVING carga_actual < 4
-      ORDER BY carga_actual ASC, u.id_usuario ASC
-      LIMIT 1`;
-    const [rows] = await pool.query(sql);
-    rows.length > 0 ? res.json({ success: true, mozo: rows[0] }) : res.json({ success: false, message: "Todos los mozos están full (4 mesas)" });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-app.get('/api/admin/metrics', async (req, res) => {
-  try {
-    // 1. KPIs principales
-    const [kpis] = await pool.query(`
-      SELECT 
-        IFNULL(SUM(total), 0) as ventasHoy,
-        COUNT(id_pedido) as pedidos,
-        IFNULL(AVG(total), 0) as ticketPromedio
-      FROM pedidos 
-      WHERE DATE(fecha_pedido) = CURDATE() AND estado_pedido = 'PAGADO'
-    `);
-
-    // 2. Ventas últimos 7 días
-    const [ventasSemana] = await pool.query(`
-      SELECT DATE(fecha_pedido) as fecha, SUM(total) as total
-      FROM pedidos 
-      WHERE fecha_pedido >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND estado_pedido = 'PAGADO'
-      GROUP BY DATE(fecha_pedido)
-      ORDER BY fecha ASC
-    `);
-
-    // 3. Top 5 productos
-    const [topProductos] = await pool.query(`
-      SELECT p.nombre, SUM(pd.cantidad) as cantidad
-      FROM pedido_detalle pd
-      JOIN productos p ON pd.id_producto = p.id_producto
-      JOIN pedidos ped ON pd.id_pedido = ped.id_pedido
-      WHERE ped.estado_pedido = 'PAGADO'
-      GROUP BY p.id_producto
-      ORDER BY cantidad DESC
-      LIMIT 5
-    `);
-
-    // 4. Rendimiento Mozos
-    const [mozos] = await pool.query(`
-      SELECT u.nombre, COUNT(p.id_pedido) as mesas, SUM(p.total) as total_vendido
-      FROM usuarios u
-      JOIN pedidos p ON u.id_usuario = p.id_mozo
-      WHERE p.estado_pedido = 'PAGADO'
-      GROUP BY u.id_usuario
-    `);
-
-    res.json({
-      kpis: kpis[0],
-      ventasSemana,
-      topProductos,
-      rendimientoMozos: mozos
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-// ==========================================
 // 🛡️ RUTAS EXCLUSIVAS DE ADMINISTRADOR
 // ==========================================
 
-// Actualizar precio de un producto
+// --- MÉTRICAS ---
+app.get('/api/admin/metrics', async (req, res) => {
+  try {
+    const [kpis] = await pool.query(`SELECT IFNULL(SUM(total), 0) as ventasHoy, COUNT(id_pedido) as pedidos, IFNULL(AVG(total), 0) as ticketPromedio FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado_pedido = 'PAGADO'`);
+    const [ventasSemana] = await pool.query(`SELECT DATE(fecha_pedido) as fecha, SUM(total) as total FROM pedidos WHERE fecha_pedido >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND estado_pedido = 'PAGADO' GROUP BY DATE(fecha_pedido) ORDER BY fecha ASC`);
+    const [topProductos] = await pool.query(`SELECT p.nombre, SUM(pd.cantidad) as cantidad FROM pedido_detalle pd JOIN productos p ON pd.id_producto = p.id_producto JOIN pedidos ped ON pd.id_pedido = ped.id_pedido WHERE ped.estado_pedido = 'PAGADO' GROUP BY p.id_producto ORDER BY cantidad DESC LIMIT 5`);
+    const [mozos] = await pool.query(`SELECT u.nombre, COUNT(p.id_pedido) as mesas, SUM(p.total) as total_vendido FROM usuarios u JOIN pedidos p ON u.id_usuario = p.id_mozo WHERE p.estado_pedido = 'PAGADO' GROUP BY u.id_usuario`);
+    res.json({ kpis: kpis[0], ventasSemana, topProductos, rendimientoMozos: mozos });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// --- HISTORIAL ---
 app.get('/api/admin/historial', async (req, res) => {
   const { fecha } = req.query;
   try {
-    const [rows] = await pool.query(`
-      SELECT p.id_pedido, TIME_FORMAT(p.fecha_pedido, '%H:%i') as hora, 
-             p.id_mesa, p.total, u.nombre as nombre_mozo
-      FROM pedidos p
-      JOIN usuarios u ON p.id_mozo = u.id_usuario
-      WHERE DATE(p.fecha_pedido) = ? AND p.estado_pedido = 'PAGADO'
-      ORDER BY p.fecha_pedido DESC
-    `, [fecha]);
+    const [rows] = await pool.query(`SELECT p.id_pedido, TIME_FORMAT(p.fecha_pedido, '%H:%i') as hora, p.id_mesa, p.total, u.nombre as nombre_mozo FROM pedidos p JOIN usuarios u ON p.id_mozo = u.id_usuario WHERE DATE(p.fecha_pedido) = ? AND p.estado_pedido = 'PAGADO' ORDER BY p.fecha_pedido DESC`, [fecha]);
     res.json(rows);
-  } catch (err) {
-    res.status(500).json(err);
-  }
+  } catch (err) { res.status(500).json(err); }
 });
+
+// --- GESTIÓN DE PRODUCTOS ---
 app.put('/api/admin/productos/:id', async (req, res) => {
   const { id } = req.params;
-  const updates = req.body; // { precio: 25, estado: 1, etc }
+  const updates = req.body;
   const fields = Object.keys(updates).map(key => `${key} = ?`).join(", ");
   const values = Object.values(updates);
-  
   try {
     await pool.query(`UPDATE productos SET ${fields} WHERE id_producto = ?`, [...values, id]);
     res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-app.put('/api/admin/productos/:id/precio', async (req, res) => {
-  const { precio } = req.body;
-  const { id } = req.params;
-  try {
-    await pool.query("UPDATE productos SET precio = ? WHERE id_producto = ?", [precio, id]);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Obtener lista de usuarios para el admin
+// --- GESTIÓN DE USUARIOS (NUEVAS RUTAS) ---
+
+// Obtener lista
 app.get('/api/admin/usuarios', async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT id_usuario, nombre, usuario, rol, estado FROM usuarios");
     res.json(rows);
-  } catch (err) {
-    res.status(500).json(err);
-  }
+  } catch (err) { res.status(500).json(err); }
 });
+
+// Crear nuevo (REGISTRAR)
+app.post('/api/admin/usuarios', async (req, res) => {
+  const { nombre, usuario, password, rol } = req.body;
+  try {
+    await pool.query(
+      "INSERT INTO usuarios (nombre, usuario, password, rol, estado) VALUES (?, ?, ?, ?, 1)",
+      [nombre, usuario, password, rol]
+    );
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Actualizar completo (EDITAR)
+app.put('/api/admin/usuarios/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nombre, usuario, rol } = req.body;
+  try {
+    await pool.query(
+      "UPDATE usuarios SET nombre = ?, usuario = ?, rol = ? WHERE id_usuario = ?",
+      [nombre, usuario, rol, id]
+    );
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Borrar
 app.delete('/api/admin/usuarios/:id', async (req, res) => {
   try {
     await pool.query("DELETE FROM usuarios WHERE id_usuario = ?", [req.params.id]);
     res.json({ success: true });
   } catch (err) { res.status(500).json(err); }
 });
-// Cambiar estado de un usuario (Activo/Inactivo)
+
+// Cambiar estado individual
 app.put('/api/admin/usuarios/:id/estado', async (req, res) => {
-  const { estado } = req.body;
   try {
-    await pool.query("UPDATE usuarios SET estado = ? WHERE id_usuario = ?", [estado, req.params.id]);
+    await pool.query("UPDATE usuarios SET estado = ? WHERE id_usuario = ?", [req.body.estado, req.params.id]);
     res.json({ success: true });
-  } catch (err) {
-    res.status(500).json(err);
-  }
+  } catch (err) { res.status(500).json(err); }
 });
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 SERVIDOR WAYRA NIKKEI ACTIVO EN PUERTO ${PORT}`));
