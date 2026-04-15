@@ -77,7 +77,17 @@ app.get('/api/mesas', async (req, res) => {
   try {
     const [results] = await pool.query("SELECT * FROM mesas");
     res.json(results);
-  } catch (err) { res.status(500).json({ error: "Error al obtener mesas" }); }
+  } catch (err) {
+    // Esto enviará el error real a la consola de Render
+    console.error("❌ ERROR CRÍTICO EN DB:", err);
+    
+    // Esto te mostrará el error real en el navegador para que no adivinemos
+    res.status(500).json({ 
+      error: "Error al obtener mesas", 
+      detalle: err.message,
+      codigo: err.code 
+    }); 
+  }
 });
 
 app.put('/api/mesas/:id/liberar', async (req, res) => {
