@@ -121,7 +121,7 @@ app.get('/api/reservas/hoy', async (req, res) => {
 
 app.get('/api/productos', async (req, res) => {
   try {
-    const [results] = await pool.query("SELECT id_producto, nombre, precio, categoria, tiempo_estimado FROM productos");
+    const [results] = await pool.query("SELECT id_producto, nombre, precio, categoria, tiempo_estimado, estado FROM productos");
     res.json(results);
   } catch (err) { res.json([]); }
 });
