@@ -1,12 +1,17 @@
 import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
+
+// Esto permite leer el archivo .env en tu PC local
+dotenv.config();
 
 const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root', 
-  password: '1234', 
-  database: 'restaurante_wayra1',
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root', 
+  password: process.env.DB_PASSWORD || '1234', 
+  database: process.env.DB_NAME || 'restaurante_wayra1',
+  port: process.env.DB_PORT || 3306,
   waitForConnections: true,    
-  connectionLimit: 10,         // Máximo de conexiones simultáneas
+  connectionLimit: 10,         
   queueLimit: 0                
 });
 
