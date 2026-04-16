@@ -27,7 +27,23 @@ app.post('/api/login', async (req, res) => {
 // ==========================================
 // 📅 MÓDULO DE RECEPCIÓN (RESERVAS)
 // ==========================================
-
+app.put('/api/reservas/:id', async (req, res) => {
+  const { id } = req.params;
+  const { id_mesa, dni_cliente, nombre_cliente, telefono_cliente, fecha_reserva, hora_reserva, observacion, id_mozo } = req.body;
+  
+  try {
+    const sql = `UPDATE reservas SET 
+      id_mesa = ?, dni_cliente = ?, nombre_cliente = ?, 
+      telefono_cliente = ?, fecha_reserva = ?, hora_reserva = ?, 
+      observacion = ?, id_mozo = ? 
+      WHERE id_reserva = ?`;
+      
+    await pool.query(sql, [id_mesa, dni_cliente, nombre_cliente, telefono_cliente, fecha_reserva, hora_reserva, observacion, id_mozo || null, id]);
+    res.json({ success: true, message: "Reserva actualizada" });
+  } catch (err) {
+    res.status(500).json({ error: "Error al actualizar reserva", detail: err.message });
+  }
+});
 app.get('/api/reservas', async (req, res) => {
   const { fecha } = req.query;
   try {
@@ -71,10 +87,16 @@ app.post('/api/reservas', async (req, res) => {
 app.get('/api/reservas/ocupadas', async (req, res) => {
   const { id_mesa, fecha } = req.query;
   try {
+    // Importante: El DATE(fecha_reserva) debe coincidir con el formato YYYY-MM-DD
     const sql = `SELECT hora_reserva FROM reservas WHERE id_mesa = ? AND DATE(fecha_reserva) = ? AND estado_reserva != 'cancelada'`;
     const [rows] = await pool.query(sql, [id_mesa, fecha]);
-    res.json(rows.map(r => r.hora_reserva)); 
-  } catch (err) { res.status(500).json(err); }
+    
+    // Enviamos las horas formateadas como HH:mm
+    const horas = rows.map(r => r.hora_reserva.toString().substring(0, 5));
+    res.json(horas); 
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // NUEVA RUTA: Conteo para el Calendario (Muestra los tickets debajo de los días)
