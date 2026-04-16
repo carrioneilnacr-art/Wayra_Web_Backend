@@ -42,31 +42,39 @@ app.get('/api/reservas', async (req, res) => {
   } catch (err) { res.status(500).json({ error: "Error al obtener reservas", detail: err.message }); }
 });
 
-// POST Reservas corregido para evitar error 500 por valores nulos
+// POST Reservas CORREGIDO: Ajustado a tus columnas exactas de Railway
 app.post('/api/reservas', async (req, res) => {
   try {
-    const { id_mesa, id_mozo, dni_cliente, nombre_cliente, apellido_cliente, telefono_cliente, fecha_reserva, hora_reserva, observacion } = req.body;
+    const { id_mesa, id_mozo, dni_cliente, nombre_cliente, telefono_cliente, fecha_reserva, hora_reserva } = req.body;
     
-    const sql = `INSERT INTO reservas (id_mesa, id_mozo, dni_cliente, nombre_cliente, apellido_cliente, telefono_cliente, fecha_reserva, hora_reserva, observacion, estado_reserva) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pendiente')`;
+    // SQL sin apellido ni observacion para que no lance Error 500
+    const sql = `INSERT INTO reservas (id_mesa, id_mozo, dni_cliente, nombre_cliente, telefono_cliente, fecha_reserva, hora_reserva, estado_reserva) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente')`;
     
-    // Usamos cortocircuitos (|| null/empty) para que la DB no rechace el insert
     await pool.query(sql, [
         id_mesa, 
         id_mozo || null, 
         dni_cliente, 
         nombre_cliente, 
-        apellido_cliente || '', 
         telefono_cliente || '', 
         fecha_reserva, 
-        hora_reserva, 
-        observacion || ''
+        hora_reserva
     ]);
     res.json({ success: true });
   } catch (err) { 
     console.error("Error en Reserva:", err);
     res.status(500).json({ error: "Error al insertar reserva", detail: err.message }); 
   }
+});
+
+// NUEVA RUTA: Bloqueo de Horarios (Evita duplicados en la misma mesa)
+app.get('/api/reservas/ocupadas', async (req, res) => {
+  const { id_mesa, fecha } = req.query;
+  try {
+    const sql = `SELECT hora_reserva FROM reservas WHERE id_mesa = ? AND DATE(fecha_reserva) = ? AND estado_reserva != 'cancelada'`;
+    const [rows] = await pool.query(sql, [id_mesa, fecha]);
+    res.json(rows.map(r => r.hora_reserva)); 
+  } catch (err) { res.status(500).json(err); }
 });
 
 app.put('/api/reservas/:id/checkin', async (req, res) => {
@@ -76,7 +84,6 @@ app.put('/api/reservas/:id/checkin', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Endpoint para asignar mozo (Solución error 404)
 app.get('/api/asignar-mozo', async (req, res) => {
     try {
       const sql = `
@@ -245,7 +252,6 @@ app.put('/api/pedidos/:id/checkout', async (req, res) => {
 // 🛡️ RUTAS EXCLUSIVAS DE ADMINISTRADOR
 // ==========================================
 
-// --- MÉTRICAS ---
 app.get('/api/admin/metrics', async (req, res) => {
   try {
     const [kpis] = await pool.query(`SELECT IFNULL(SUM(total), 0) as ventasHoy, COUNT(id_pedido) as pedidos, IFNULL(AVG(total), 0) as ticketPromedio FROM pedidos WHERE DATE(fecha_pedido) = CURDATE() AND estado_pedido = 'PAGADO'`);
@@ -256,7 +262,6 @@ app.get('/api/admin/metrics', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// --- HISTORIAL ---
 app.get('/api/admin/historial', async (req, res) => {
   const { fecha } = req.query;
   try {
@@ -265,7 +270,6 @@ app.get('/api/admin/historial', async (req, res) => {
   } catch (err) { res.status(500).json(err); }
 });
 
-// --- GESTIÓN DE PRODUCTOS ---
 app.put('/api/admin/productos/:id', async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
@@ -277,7 +281,6 @@ app.put('/api/admin/productos/:id', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// --- CREAR PRODUCTO NUEVO (POST) ---
 app.post('/api/admin/productos', async (req, res) => {
   const { nombre, precio, categoria, tiempo_estimado } = req.body;
   try {
@@ -290,8 +293,6 @@ app.post('/api/admin/productos', async (req, res) => {
     res.status(500).json({ error: "Error al crear producto", detail: err.message });
   }
 });
-
-// --- GESTIÓN DE USUARIOS (NUEVAS RUTAS) ---
 
 app.get('/api/admin/usuarios', async (req, res) => {
   try {
