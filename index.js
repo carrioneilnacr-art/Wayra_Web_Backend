@@ -35,21 +35,20 @@ app.get('/api/reservas', async (req, res) => {
       SELECT r.*, u.nombre as nombre_mozo 
       FROM reservas r 
       LEFT JOIN usuarios u ON r.id_mozo = u.id_usuario 
-      WHERE DATE(r.fecha_reserva) = ? 
+      WHERE DATE(r.fecha_reserva) = ? AND r.estado_reserva != 'cancelada'
       ORDER BY r.hora_reserva ASC`;
     const [results] = await pool.query(sql, [fecha || new Date().toISOString().split('T')[0]]);
     res.json(results);
   } catch (err) { res.status(500).json({ error: "Error al obtener reservas", detail: err.message }); }
 });
 
-// POST Reservas CORREGIDO: Ajustado a tus columnas exactas de Railway
+// POST Reservas ACTUALIZADO: Incluye observación (nota)
 app.post('/api/reservas', async (req, res) => {
   try {
-    const { id_mesa, id_mozo, dni_cliente, nombre_cliente, telefono_cliente, fecha_reserva, hora_reserva } = req.body;
+    const { id_mesa, id_mozo, dni_cliente, nombre_cliente, telefono_cliente, fecha_reserva, hora_reserva, observacion } = req.body;
     
-    // SQL sin apellido ni observacion para que no lance Error 500
-    const sql = `INSERT INTO reservas (id_mesa, id_mozo, dni_cliente, nombre_cliente, telefono_cliente, fecha_reserva, hora_reserva, estado_reserva) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente')`;
+    const sql = `INSERT INTO reservas (id_mesa, id_mozo, dni_cliente, nombre_cliente, telefono_cliente, fecha_reserva, hora_reserva, estado_reserva, observacion) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente', ?)`;
     
     await pool.query(sql, [
         id_mesa, 
@@ -58,7 +57,8 @@ app.post('/api/reservas', async (req, res) => {
         nombre_cliente, 
         telefono_cliente || '', 
         fecha_reserva, 
-        hora_reserva
+        hora_reserva,
+        observacion || ''
     ]);
     res.json({ success: true });
   } catch (err) { 
@@ -74,6 +74,17 @@ app.get('/api/reservas/ocupadas', async (req, res) => {
     const sql = `SELECT hora_reserva FROM reservas WHERE id_mesa = ? AND DATE(fecha_reserva) = ? AND estado_reserva != 'cancelada'`;
     const [rows] = await pool.query(sql, [id_mesa, fecha]);
     res.json(rows.map(r => r.hora_reserva)); 
+  } catch (err) { res.status(500).json(err); }
+});
+
+// NUEVA RUTA: Conteo para el Calendario (Muestra los tickets debajo de los días)
+app.get('/api/reservas/conteo-mensual', async (req, res) => {
+  try {
+    const sql = `SELECT DATE_FORMAT(fecha_reserva, '%Y-%m-%d') as fecha, COUNT(*) as cantidad 
+                 FROM reservas WHERE estado_reserva != 'cancelada' 
+                 GROUP BY DATE(fecha_reserva)`;
+    const [rows] = await pool.query(sql);
+    res.json(rows);
   } catch (err) { res.status(500).json(err); }
 });
 
