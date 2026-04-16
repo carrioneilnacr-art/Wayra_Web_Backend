@@ -203,23 +203,45 @@ app.get('/api/pedidos/hoy', async (req, res) => {
 });
 
 app.post('/api/pedidos', async (req, res) => {
-  const { id_mesa, id_mozo, nombre_cliente, items, total, observacion } = req.body;
+  const { id_mesa, id_mozo, total, items } = req.body;
+  
+  // Verificación de seguridad
+  if (!items || items.length === 0) {
+    return res.status(400).json({ error: "El pedido está vacío" });
+  }
+
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-    const sqlPedido = `INSERT INTO pedidos (id_mesa, id_mozo, nombre_cliente, total, estado_pedido, fecha_pedido, observacion) 
-                       VALUES (?, ?, ?, ?, 'PREPARACION', NOW(), ?)`;
-    const [pedidoRes] = await connection.query(sqlPedido, [id_mesa, id_mozo, nombre_cliente, total, observacion || '']);
+
+    // 1. Insertar el Pedido (Ajustado a tus columnas: mesa, mozo, fecha, total, estado)
+    const sqlPedido = `INSERT INTO pedidos (id_mesa, id_mozo, fecha_pedido, total, estado_pedido) 
+                       VALUES (?, ?, NOW(), ?, 'PREPARACION')`;
+    
+    const [pedidoRes] = await connection.query(sqlPedido, [
+      id_mesa, 
+      id_mozo, 
+      total
+    ]);
+    
     const idPedido = pedidoRes.insertId;
+
+    // 2. Insertar los Detalles (Ajustado a: pedido, producto, cantidad, subtotal)
     const sqlDetalle = `INSERT INTO pedido_detalle (id_pedido, id_producto, cantidad, subtotal) VALUES ?`;
     const valoresDetalle = items.map(item => [idPedido, item.id_producto, item.cantidad, item.subtotal]);
+    
     await connection.query(sqlDetalle, [valoresDetalle]);
+
+    // 3. Actualizar estado de la Mesa a ocupada
     await connection.query("UPDATE mesas SET estado = 'ocupada', hora_ocupada = NOW() WHERE id_mesa = ?", [id_mesa]);
+
     await connection.commit();
     res.json({ success: true, id_pedido: idPedido });
+
   } catch (err) {
     if (connection) await connection.rollback();
-    res.status(500).json({ error: err.message });
+    console.error("❌ ERROR EN TRANSACCIÓN:", err);
+    res.status(500).json({ error: "Error en base de datos", detail: err.message });
   } finally {
     connection.release();
   }
