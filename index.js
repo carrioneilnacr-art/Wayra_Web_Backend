@@ -276,6 +276,60 @@ app.put('/api/pedidos/:id/observacion', async (req, res) => {
 // ==========================================
 // 💳 PAGOS Y CIERRE (SISTEMA DE VENTAS)
 // ==========================================
+// ==========================================
+// 📄 MÓDULO DE COMPROBANTES (BOLETA/FACTURA)
+// ==========================================
+app.get('/api/admin/boleta/:id_pedido', async (req, res) => {
+  const { id_pedido } = req.params;
+  
+  try {
+    // 1. Buscamos los datos generales del pedido y el cliente
+    const sqlPedido = `
+      SELECT p.id_pedido, p.fecha_pedido, p.total, p.dni_cliente, p.nombre_cliente, 
+             p.id_mesa, u.nombre as nombre_mozo, p.estado_pedido
+      FROM pedidos p
+      JOIN usuarios u ON p.id_mozo = u.id_usuario
+      WHERE p.id_pedido = ?`;
+    
+    const [pedido] = await pool.query(sqlPedido, [id_pedido]);
+
+    if (pedido.length === 0) {
+      return res.status(404).json({ error: "Comprobante no encontrado" });
+    }
+
+    // 2. Buscamos el detalle de los productos consumidos
+    const sqlDetalle = `
+      SELECT pd.cantidad, pd.subtotal, pr.nombre as producto, pr.precio as precio_unitario
+      FROM pedido_detalle pd
+      JOIN productos pr ON pd.id_producto = pr.id_producto
+      WHERE pd.id_pedido = ?`;
+    
+    const [items] = await pool.query(sqlDetalle, [id_pedido]);
+
+    // 3. (Opcional) Buscamos datos adicionales de la tabla ventas si ya se pagó
+    const [venta] = await pool.query(
+      "SELECT metodo_pago, tipo_comprobante, fecha_venta FROM ventas WHERE id_venta = (SELECT MAX(id_venta) FROM ventas) LIMIT 1"
+    );
+
+    // Enviamos todo el paquete de datos al Frontend
+    res.json({
+      success: true,
+      header: {
+        restaurante: "Wayra Nikkei",
+        ruc: "20123456789", // Pon tu RUC aquí
+        direccion: "Los Olivos, Lima",
+        telefono: "987 654 321"
+      },
+      pedido: pedido[0],
+      items: items,
+      pago: venta[0] || { metodo_pago: "EFECTIVO", tipo_comprobante: "BOLETA" }
+    });
+
+  } catch (err) {
+    console.error("❌ Error al generar boleta:", err);
+    res.status(500).json({ error: "Error interno", detail: err.message });
+  }
+});
 app.put('/api/pedidos/:id/checkout', async (req, res) => {
   const { id } = req.params;
   const { metodo_pago, dni_cliente, nombre_cliente, tipo_doc } = req.body; 
