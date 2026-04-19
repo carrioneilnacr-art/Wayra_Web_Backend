@@ -274,30 +274,69 @@ app.put('/api/pedidos/:id/observacion', async (req, res) => {
 });
 
 // ==========================================
-// 💳 PAGOS Y CIERRE
+// 💳 PAGOS Y CIERRE (SISTEMA DE VENTAS)
 // ==========================================
 app.put('/api/pedidos/:id/checkout', async (req, res) => {
   const { id } = req.params;
-  const { metodo_pago, dni_cliente, nombre_cliente, tipo_doc } = req.body;
+  const { metodo_pago, dni_cliente, nombre_cliente, tipo_doc } = req.body; 
   let connection;
+
   try {
     connection = await pool.getConnection();
     await connection.beginTransaction();
-    const [pedidos] = await connection.query("SELECT total, id_mesa FROM pedidos WHERE id_pedido = ?", [id]);
+
+    // 1. Obtener el pedido y la mesa
+    const [pedidos] = await connection.query(
+      "SELECT total, id_mesa FROM pedidos WHERE id_pedido = ?", 
+      [id]
+    );
+    
     if (pedidos.length === 0) {
       await connection.rollback();
       return res.status(404).json({ error: "Pedido no encontrado" });
     }
     const pedido = pedidos[0];
-    await connection.query("UPDATE pedidos SET dni_cliente = ?, nombre_cliente = ?, estado_pedido = 'PAGADO' WHERE id_pedido = ?", [dni_cliente, nombre_cliente, id]);
-    const sqlVenta = `INSERT INTO ventas (total, metodo_pago, tipo_comprobante) VALUES (?, ?, ?)`;
-    await connection.query(sqlVenta, [pedido.total, metodo_pago, tipo_doc]);
-    await connection.query("UPDATE mesas SET estado = 'limpieza', hora_ocupada = NULL WHERE id_mesa = ?", [pedido.id_mesa]);
+
+    // 2. Buscar datos de reserva si el cliente es directo (opcional pero recomendado)
+    let finalDni = dni_cliente;
+    let finalNombre = nombre_cliente;
+
+    if (!finalDni || !finalNombre) {
+      const [reserva] = await connection.query(
+        "SELECT dni_cliente, nombre_cliente FROM reservas WHERE id_mesa = ? AND estado_reserva = 'confirmada' AND DATE(fecha_reserva) = CURDATE() LIMIT 1",
+        [pedido.id_mesa]
+      );
+      if (reserva.length > 0) {
+        finalDni = finalDni || reserva[0].dni_cliente;
+        finalNombre = finalNombre || reserva[0].nombre_cliente;
+      }
+    }
+
+    // 3. Registrar en la tabla VENTAS (La que acabas de crear)
+    const [ventaRes] = await connection.query(
+      "INSERT INTO ventas (total, metodo_pago, tipo_comprobante, fecha_venta) VALUES (?, ?, ?, NOW())",
+      [pedido.total, metodo_pago || 'EFECTIVO', tipo_doc || 'BOLETA']
+    );
+
+    // 4. Actualizar el PEDIDO (Datos del cliente y estado)
+    await connection.query(
+      "UPDATE pedidos SET dni_cliente = ?, nombre_cliente = ?, estado_pedido = 'PAGADO' WHERE id_pedido = ?", 
+      [finalDni || '00000000', finalNombre || 'CLIENTE GENERAL', id]
+    );
+
+    // 5. Liberar la MESA
+    await connection.query(
+      "UPDATE mesas SET estado = 'disponible', hora_ocupada = NULL WHERE id_mesa = ?", 
+      [pedido.id_mesa]
+    );
+
     await connection.commit();
-    res.status(200).json({ success: true });
+    res.json({ success: true, message: "Venta registrada y mesa liberada" });
+
   } catch (err) {
     if (connection) await connection.rollback();
-    res.status(500).json({ error: "Error en DB", detail: err.message });
+    console.error("❌ ERROR CRÍTICO EN CHECKOUT:", err);
+    res.status(500).json({ error: "No se pudo procesar el pago", detail: err.message });
   } finally {
     if (connection) connection.release();
   }
