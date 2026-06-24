@@ -1,4 +1,5 @@
 # 🥢 Wayra Nikkei - Backend API
+![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white) ![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB) ![MySQL](https://img.shields.io/badge/mysql-4479A1.svg?style=for-the-badge&logo=mysql&logoColor=white) ![Railway](https://img.shields.io/badge/Railway-131415?style=for-the-badge&logo=railway&logoColor=white)
 
 API RESTful desarrollada para la gestión integral del restaurante Wayra Nikkei. Este sistema maneja la disponibilidad de mesas, control de reservas, procesamiento de comandas transaccionales y panel de métricas para el staff.
 
