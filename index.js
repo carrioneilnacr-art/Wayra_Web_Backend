@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 
-// --- IMPORTACIÓN DE RUTAS ---
+// --- IMPORTACIÓN DE RUTAS (Intactas al 100%) ---
 import mesaRoutes from './routes/mesa.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import reservaRoutes from './routes/reserva.routes.js';
@@ -12,12 +12,29 @@ import dashboardRoutes from './routes/dashboard.routes.js';
 
 const app = express(); 
 
-// Configuración de CORS y Parseo
+// --- 1. PARCHE DE SEGURIDAD: Ocultar identidad del servidor ---
+app.disable('x-powered-by');
+
+// --- 2. PARCHE DE SEGURIDAD: Lista blanca estricta para CORS ---
+const origenesPermitidos = [
+  'http://localhost:5173',                  // Frontend local en Vite
+  'http://localhost:3000',                  // Pruebas locales
+  'https://wayra-web-fronted.vercel.app/'         // <-- pon aquí tu link exacto de Vercel
+];
+
 app.use(cors({
-  origin: '*', 
+  origin: function (origin, callback) {
+    // Permite peticiones sin origen (ej. Postman o apps móviles) o las que estén en la lista blanca
+    if (!origin || origenesPermitidos.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Bloqueado por política de seguridad CORS'));
+    }
+    },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type, Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'] // <-- Corregido: separados en dos elementos
 }));
+
 app.use(express.json());
 
 // --- REGISTRO DE ENDPOINTS ---
@@ -32,4 +49,9 @@ app.use('/api', usuarioRoutes);
 app.use('/api', dashboardRoutes);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 SERVIDOR WAYRA NIKKEI ACTIVO EN PUERTO ${PORT}`));
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => console.log(`🚀 SERVIDOR WAYRA NIKKEI ACTIVO EN PUERTO ${PORT}`));
+}
+
+// Exportamos 'app' para que Supertest pueda consumirlo
+export default app;
