@@ -23,16 +23,9 @@ const origenesPermitidos = [
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
-    // Permite peticiones sin origen (ej. Postman o apps móviles) o las que estén en la lista blanca
-    if (!origin || origenesPermitidos.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Bloqueado por política de seguridad CORS'));
-    }
-  },
+  origin: origenesPermitidos,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'] // <-- Corregido: separados en dos elementos
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
