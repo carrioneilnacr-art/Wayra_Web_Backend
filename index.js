@@ -10,7 +10,7 @@ import productoRoutes from './routes/producto.routes.js';
 import usuarioRoutes from './routes/usuario.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 
-const app = express(); 
+const app = express();
 
 // --- 1. PARCHE DE SEGURIDAD: Ocultar identidad del servidor ---
 app.disable('x-powered-by');
@@ -30,7 +30,7 @@ app.use(cors({
     } else {
       callback(new Error('Bloqueado por política de seguridad CORS'));
     }
-    },
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'] // <-- Corregido: separados en dos elementos
 }));
