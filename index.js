@@ -19,7 +19,7 @@ app.disable('x-powered-by');
 const origenesPermitidos = [
   'http://localhost:5173',                  // Frontend local en Vite
   'http://localhost:3000',                  // Pruebas locales
-  'https://wayra-web-fronted.vercel.app/'         // <-- pon aquí tu link exacto de Vercel
+  'https://wayra-web-fronted.vercel.app'         // <-- pon aquí tu link exacto de Vercel
 ];
 
 app.use(cors({
