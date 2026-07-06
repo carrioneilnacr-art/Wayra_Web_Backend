@@ -19,6 +19,7 @@ Este proyecto ha pasado por un riguroso proceso de aseguramiento de calidad (QA)
 * **Pruebas Unitarias y de Integración:** Cuenta con una batería de **78 tests automatizados** que cubren flujos exitosos, reglas de negocio y manejo de errores (400, 401, 403, 404, 500).
 * **Cobertura de Código (Code Coverage):** Mantenemos una cobertura general del **93.7%**, asegurando que todos los controladores y servicios principales estén validados, incluso simulando fallos críticos de base de datos (Rollbacks).
 * **Análisis Estático (SAST):** El código es evaluado constantemente mediante **SonarQube Scanner**, asegurando que se cumplen estrictos estándares de código, nula duplicidad de código y detección temprana de vulnerabilidades de seguridad.
+* **Pruebas de Estrés y Rendimiento:** Se integró **Artillery** para simulaciones de carga (Ramp-up), demostrando que la arquitectura actual soporta de forma estable transacciones concurrentes con tiempos de respuesta óptimos. El límite tolerante del servidor se ubica alrededor de las **25 a 30 peticiones por segundo** antes de presentar degradación (cuello de botella) o denegación de servicio para protección de la base de datos.
 
 ## 🏗️ Estructura del Proyecto (Arquitectura en Capas)
 

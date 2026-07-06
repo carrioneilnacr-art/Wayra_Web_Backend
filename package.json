@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --coverage --forceExit",
+    "test:stress": "npx artillery run stress-test.yml -o stress-report.json && npx artillery report stress-report.json",
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
@@ -19,6 +20,7 @@
     "mysql2": "^3.20.0"
   },
   "devDependencies": {
+    "artillery": "^1.7.9",
     "cross-env": "^10.1.0",
     "jest": "^30.4.2",
     "jest-html-reporter": "^4.4.0",
@@ -28,12 +30,15 @@
   "jest": {
     "reporters": [
       "default",
-      ["jest-html-reporter", {
-        "pageTitle": "Reporte de Pruebas Wayra Backend",
-        "outputPath": "./test-report.html",
-        "includeFailureMsg": true,
-        "includeConsoleLog": true
-      }]
+      [
+        "jest-html-reporter",
+        {
+          "pageTitle": "Reporte de Pruebas Wayra Backend",
+          "outputPath": "./test-report.html",
+          "includeFailureMsg": true,
+          "includeConsoleLog": true
+        }
+      ]
     ]
   }
 }

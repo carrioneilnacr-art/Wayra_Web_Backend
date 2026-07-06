@@ -60,9 +60,9 @@ describe('🧪 Suite de Pruebas - Módulo de Pedidos', () => {
         };
 
         it('Debería crear un pedido exitosamente (Status 200)', async () => {
-            mockConnection.query.mockResolvedValueOnce([[{ cant: 1 }]]); 
+            mockConnection.query.mockResolvedValueOnce([[{ cant: 1 }]]);
             mockConnection.query.mockResolvedValueOnce([{ insertId: 99 }]);
-            
+
             const res = await request(app)
                 .post('/api/pedidos')
                 .send(payloadNuevoPedido);
@@ -108,7 +108,7 @@ describe('🧪 Suite de Pruebas - Módulo de Pedidos', () => {
         it('Debería procesar el pago correctamente y liberar la mesa (Status 200)', async () => {
             mockConnection.query.mockResolvedValueOnce([[{ total: 100, id_mesa: 2, id_mozo: 1 }]]);
             mockConnection.query.mockResolvedValueOnce([[]]);
-            
+
             const res = await request(app)
                 .put('/api/pedidos/1/checkout')
                 .send({ metodo_pago: 'EFECTIVO', tipo_doc: 'BOLETA' });
@@ -116,7 +116,7 @@ describe('🧪 Suite de Pruebas - Módulo de Pedidos', () => {
             expect(res.statusCode).toBe(200);
             expect(res.body.success).toBe(true);
             expect(mockConnection.commit).toHaveBeenCalled();
-        }); 
+        });
 
         it('Debería retornar 500 si hay error en checkout', async () => {
             mockConnection.query.mockRejectedValueOnce(new Error('DB Error checkout'));
@@ -136,9 +136,9 @@ describe('🧪 Suite de Pruebas - Módulo de Pedidos', () => {
 
         it('DELETE /api/pedidos/detalle/:id_detalle - Debería eliminar un item', async () => {
             // Simulamos el select previo y luego los updates/deletes
-            db.query.mockResolvedValueOnce([[{ id_pedido: 1, subtotal: 15 }]]); 
-            db.query.mockResolvedValueOnce([{ affectedRows: 1 }]); 
-            db.query.mockResolvedValueOnce([{ affectedRows: 1 }]); 
+            db.query.mockResolvedValueOnce([[{ id_pedido: 1, subtotal: 15 }]]);
+            db.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
+            db.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
 
             const res = await request(app).delete('/api/pedidos/detalle/1');
             expect(res.statusCode).toBe(200);

@@ -6,7 +6,7 @@ import db from '../config/db.js';
 jest.spyOn(db, 'query');
 
 describe('🧪 Suite de Pruebas - Módulo de Mesas', () => {
-    
+
     afterEach(() => {
         jest.clearAllMocks();
     });
@@ -18,7 +18,7 @@ describe('🧪 Suite de Pruebas - Módulo de Mesas', () => {
     describe('GET /api/mesas', () => {
         it('Debería obtener todas las mesas (Status 200)', async () => {
             db.query.mockResolvedValueOnce([[{ id_mesa: 1, estado: 'disponible' }]]);
-            
+
             const res = await request(app).get('/api/mesas');
             expect(res.statusCode).toBe(200);
             expect(res.body[0].id_mesa).toBe(1);
@@ -35,7 +35,7 @@ describe('🧪 Suite de Pruebas - Módulo de Mesas', () => {
     describe('PUT /api/mesas/:id/liberar', () => {
         it('Debería liberar una mesa correctamente', async () => {
             db.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
-            
+
             const res = await request(app).put('/api/mesas/1/liberar');
             expect(res.statusCode).toBe(200);
             expect(res.body.success).toBe(true);
@@ -43,7 +43,7 @@ describe('🧪 Suite de Pruebas - Módulo de Mesas', () => {
 
         it('Debería lanzar error 500 si la mesa no existe', async () => {
             db.query.mockResolvedValueOnce([{ affectedRows: 0 }]); // Simula que no encontró la mesa
-            
+
             const res = await request(app).put('/api/mesas/999/liberar');
             expect(res.statusCode).toBe(500);
             expect(res.body.error).toBe('Error al liberar mesa');
@@ -55,22 +55,22 @@ describe('🧪 Suite de Pruebas - Módulo de Mesas', () => {
         it('Debería asignar un mozo a una mesa', async () => {
             db.query.mockResolvedValueOnce([[{ total: 2 }]]); // Tiene 2 mesas, pasa validación
             db.query.mockResolvedValueOnce([{ affectedRows: 1 }]); // Update exitoso
-            
+
             const res = await request(app)
                 .post('/api/mesas/asignar') // Cambia a .put si tu ruta es PUT
                 .send({ id_mesa: 3, id_mozo: 1 });
-                
+
             expect(res.statusCode).toBe(200);
             expect(res.body.success).toBe(true);
         });
 
         it('Debería rechazar por límite de mesas (Status 403)', async () => {
             db.query.mockResolvedValueOnce([[{ total: 4 }]]); // Ya tiene 4 mesas
-            
+
             const res = await request(app)
                 .post('/api/mesas/asignar')
                 .send({ id_mesa: 3, id_mozo: 1 });
-                
+
             expect(res.statusCode).toBe(403);
             expect(res.body.error).toBe('El mozo ya tiene el límite de 4 mesas');
         });
@@ -79,18 +79,18 @@ describe('🧪 Suite de Pruebas - Módulo de Mesas', () => {
             const res = await request(app)
                 .post('/api/mesas/asignar')
                 .send({ id_mesa: 3 }); // Falta id_mozo
-                
+
             expect(res.statusCode).toBe(400);
             expect(res.body.error).toContain('Faltan datos obligatorios');
         });
 
         it('Debería retornar 500 si hay error de DB en asignación', async () => {
             db.query.mockRejectedValueOnce(new Error('DB Error Asignación'));
-            
+
             const res = await request(app)
                 .post('/api/mesas/asignar')
                 .send({ id_mesa: 3, id_mozo: 1 });
-                
+
             expect(res.statusCode).toBe(500);
             expect(res.body.error).toBe('Error en la asignación');
         });

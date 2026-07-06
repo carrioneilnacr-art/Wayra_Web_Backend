@@ -6,7 +6,7 @@ import db from '../config/db.js';
 jest.spyOn(db, 'query');
 
 describe('🧪 Suite de Pruebas - Módulo de Autenticación', () => {
-    
+
     afterEach(() => {
         jest.clearAllMocks();
     });
@@ -84,7 +84,7 @@ describe('🧪 Suite de Pruebas - Módulo de Autenticación', () => {
 
         it('Debería dar error si no se envía el ID (Status 400)', async () => {
             const res = await request(app).post('/api/logout').send({});
-            
+
             expect(res.statusCode).toBe(400);
             expect(res.body.error).toBe('Falta ID de usuario');
         });

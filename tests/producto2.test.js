@@ -6,7 +6,7 @@ import db from '../config/db.js';
 jest.spyOn(db, 'query');
 
 describe('🧪 Suite de Pruebas - Módulo de Productos', () => {
-    
+
     afterEach(() => {
         jest.clearAllMocks();
     });
@@ -82,7 +82,7 @@ describe('🧪 Suite de Pruebas - Módulo de Productos', () => {
 
             const res = await request(app)
                 .put('/api/admin/productos/1')
-                .send({ precio: 20, estado: 0 }); 
+                .send({ precio: 20, estado: 0 });
 
             expect(res.statusCode).toBe(200);
             expect(res.body.success).toBe(true);

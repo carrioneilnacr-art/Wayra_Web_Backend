@@ -6,7 +6,7 @@ import db from '../config/db.js';
 jest.spyOn(db, 'query');
 
 describe('🧪 Suite de Pruebas - Módulo de Usuarios', () => {
-    
+
     afterEach(() => {
         jest.clearAllMocks();
     });
@@ -93,7 +93,7 @@ describe('🧪 Suite de Pruebas - Módulo de Usuarios', () => {
             expect(res.statusCode).toBe(200);
             expect(res.body.success).toBe(true);
         });
-        
+
         it('Debería eliminar un usuario', async () => {
             db.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
 

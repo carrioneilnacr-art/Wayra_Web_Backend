@@ -7,7 +7,7 @@ import db from '../config/db.js';
 jest.spyOn(db, 'query');
 
 describe('🧪 Suite de Pruebas - Dashboard Analytics', () => {
-    
+
     afterEach(() => {
         jest.clearAllMocks(); // Limpiamos memoria tras cada test
     });
@@ -17,10 +17,10 @@ describe('🧪 Suite de Pruebas - Dashboard Analytics', () => {
     });
 
     describe('GET /api/admin/metrics', () => {
-        
+
         it('Debería retornar las métricas completas con insight de alta demanda (Status 200)', async () => {
             // MAGIA SENIOR: Simulamos las 5 consultas en orden exacto
-            
+
             // 1. kpis (Ventas > 300 para no detonar la alerta)
             db.query.mockResolvedValueOnce([[{ ventasHoy: 500, pedidos: 15, ticketPromedio: 33.33 }]]);
             // 2. historico
@@ -77,7 +77,7 @@ describe('🧪 Suite de Pruebas - Dashboard Analytics', () => {
     });
 
     describe('GET /api/admin/historial', () => {
-        
+
         it('Debería retornar el historial de ventas por fecha (Status 200)', async () => {
             db.query.mockResolvedValueOnce([[{ id_pedido: 1, hora: '14:30', id_mesa: 2, total: 150, nombre_mozo: 'Carlos' }]]);
 
