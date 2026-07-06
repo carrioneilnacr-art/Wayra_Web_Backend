@@ -35,6 +35,12 @@ describe('🧪 Suite de Pruebas - Módulo de Reservas', () => {
             expect(res.statusCode).toBe(200);
             expect(res.body[0].nombre_cliente).toBe('Juan');
         });
+
+        it('Debería manejar error 500 al listar', async () => {
+            db.query.mockRejectedValueOnce(new Error('DB Error'));
+            const res = await request(app).get('/api/reservas?fecha=2023-10-01');
+            expect(res.statusCode).toBe(500);
+        });
     });
 
     describe('POST /api/reservas (Transaccional)', () => {
@@ -81,6 +87,12 @@ describe('🧪 Suite de Pruebas - Módulo de Reservas', () => {
             expect(res.statusCode).toBe(200);
             expect(res.body.success).toBe(true);
         });
+
+        it('Debería manejar error 500 en checkin', async () => {
+            db.query.mockRejectedValueOnce(new Error('DB error'));
+            const res = await request(app).put('/api/reservas/1/checkin').send({ id_usuario: 2 });
+            expect(res.statusCode).toBe(500);
+        });
     });
 
     describe('PUT /api/reservas/:id/anular', () => {
@@ -88,6 +100,12 @@ describe('🧪 Suite de Pruebas - Módulo de Reservas', () => {
             db.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
             const res = await request(app).put('/api/reservas/1/anular');
             expect(res.statusCode).toBe(200);
+        });
+
+        it('Debería manejar error 500 en anular', async () => {
+            db.query.mockRejectedValueOnce(new Error('DB error'));
+            const res = await request(app).put('/api/reservas/1/anular');
+            expect(res.statusCode).toBe(500);
         });
     });
 
@@ -108,6 +126,25 @@ describe('🧪 Suite de Pruebas - Módulo de Reservas', () => {
             db.query.mockResolvedValueOnce([[{ id_reserva: 1 }]]);
             const res = await request(app).get('/api/reservas/hoy?id_mozo=3');
             expect(res.body.length).toBe(1);
+        });
+
+        it('/ocupadas - Debería retornar 500 si DB falla', async () => {
+            db.query.mockRejectedValueOnce(new Error('DB Error'));
+            const res = await request(app).get('/api/reservas/ocupadas?id_mesa=1&fecha=2023-10-01');
+            expect(res.statusCode).toBe(500);
+        });
+
+        it('/conteo-mensual - Debería retornar 500 si DB falla', async () => {
+            db.query.mockRejectedValueOnce(new Error('DB Error'));
+            const res = await request(app).get('/api/reservas/conteo-mensual');
+            expect(res.statusCode).toBe(500);
+        });
+
+        it('/hoy - Debería manejar error de DB retornando arreglo vacío', async () => {
+            db.query.mockRejectedValueOnce(new Error('DB Error'));
+            const res = await request(app).get('/api/reservas/hoy?id_mozo=3');
+            expect(res.statusCode).toBe(200);
+            expect(res.body).toEqual([]);
         });
     });
 });

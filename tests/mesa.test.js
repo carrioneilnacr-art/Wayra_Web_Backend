@@ -83,5 +83,16 @@ describe('🧪 Suite de Pruebas - Módulo de Mesas', () => {
             expect(res.statusCode).toBe(400);
             expect(res.body.error).toContain('Faltan datos obligatorios');
         });
+
+        it('Debería retornar 500 si hay error de DB en asignación', async () => {
+            db.query.mockRejectedValueOnce(new Error('DB Error Asignación'));
+            
+            const res = await request(app)
+                .post('/api/mesas/asignar')
+                .send({ id_mesa: 3, id_mozo: 1 });
+                
+            expect(res.statusCode).toBe(500);
+            expect(res.body.error).toBe('Error en la asignación');
+        });
     });
 });

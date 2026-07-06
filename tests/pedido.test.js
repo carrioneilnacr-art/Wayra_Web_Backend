@@ -93,6 +93,15 @@ describe('🧪 Suite de Pruebas - Módulo de Pedidos', () => {
             expect(res.statusCode).toBe(400);
             expect(res.body.error).toBe("El pedido está vacío");
         });
+
+        it('Debería retornar 500 si hay error interno al crear', async () => {
+            mockConnection.query.mockRejectedValueOnce(new Error('DB Error'));
+            const res = await request(app)
+                .post('/api/pedidos')
+                .send(payloadNuevoPedido);
+            expect(res.statusCode).toBe(500);
+            expect(mockConnection.rollback).toHaveBeenCalled();
+        });
     });
 
     describe('PUT /api/pedidos/:id/checkout', () => {
@@ -108,6 +117,15 @@ describe('🧪 Suite de Pruebas - Módulo de Pedidos', () => {
             expect(res.body.success).toBe(true);
             expect(mockConnection.commit).toHaveBeenCalled();
         }); 
+
+        it('Debería retornar 500 si hay error en checkout', async () => {
+            mockConnection.query.mockRejectedValueOnce(new Error('DB Error checkout'));
+            const res = await request(app)
+                .put('/api/pedidos/1/checkout')
+                .send({ metodo_pago: 'EFECTIVO', tipo_doc: 'BOLETA' });
+            expect(res.statusCode).toBe(500);
+            expect(mockConnection.rollback).toHaveBeenCalled();
+        });
     });
     describe('Rutas Secundarias de Pedidos (Items y Boleta)', () => {
         it('POST /api/pedidos/:id/agregar - Debería agregar un item', async () => {
@@ -150,6 +168,30 @@ describe('🧪 Suite de Pruebas - Módulo de Pedidos', () => {
             const res = await request(app).get('/api/admin/boleta/999');
             expect(res.statusCode).toBe(404);
             expect(res.body.error).toBe('Comprobante no encontrado');
+        });
+
+        it('Debería manejar 500 en agregar item', async () => {
+            db.query.mockRejectedValueOnce(new Error('DB error'));
+            const res = await request(app).post('/api/pedidos/1/agregar').send({ id_producto: 1, cantidad: 1, subtotal: 10 });
+            expect(res.statusCode).toBe(500);
+        });
+
+        it('Debería manejar 500 en eliminar item', async () => {
+            db.query.mockRejectedValueOnce(new Error('DB error'));
+            const res = await request(app).delete('/api/pedidos/detalle/1');
+            expect(res.statusCode).toBe(500);
+        });
+
+        it('Debería manejar 500 en actualizar observacion', async () => {
+            db.query.mockRejectedValueOnce(new Error('DB error'));
+            const res = await request(app).put('/api/pedidos/1/observacion').send({ observacion: 'Sin cebolla' });
+            expect(res.statusCode).toBe(500);
+        });
+
+        it('Debería manejar 500 en boleta', async () => {
+            db.query.mockRejectedValueOnce(new Error('DB error'));
+            const res = await request(app).get('/api/admin/boleta/1');
+            expect(res.statusCode).toBe(500);
         });
     });
 });

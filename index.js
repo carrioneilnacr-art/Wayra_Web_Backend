@@ -42,9 +42,11 @@ app.use('/api', usuarioRoutes);
 app.use('/api', dashboardRoutes);
 
 const PORT = process.env.PORT || 3000;
+let server;
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => console.log(`🚀 SERVIDOR WAYRA NIKKEI ACTIVO EN PUERTO ${PORT}`));
+  server = app.listen(PORT, () => console.log(`🚀 SERVIDOR WAYRA NIKKEI ACTIVO EN PUERTO ${PORT}`));
 }
 
-// Exportamos 'app' para que Supertest pueda consumirlo
+// Exportamos 'app' y 'server' para que Supertest y Jest puedan consumirlo
+export { server };
 export default app;

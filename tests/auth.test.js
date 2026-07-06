@@ -55,6 +55,17 @@ describe('🧪 Suite de Pruebas - Módulo de Autenticación', () => {
             expect(res.statusCode).toBe(400);
             expect(res.body.message).toBe('Faltan credenciales');
         });
+
+        it('Debería manejar error interno de la DB en login (Status 500)', async () => {
+            db.query.mockRejectedValueOnce(new Error('DB Error'));
+
+            const res = await request(app)
+                .post('/api/login')
+                .send({ user: 'admin', pass: '123456' });
+
+            expect(res.statusCode).toBe(500);
+            expect(res.body.error).toBe('Error en Login');
+        });
     });
 
     describe('POST /api/logout', () => {
@@ -76,6 +87,17 @@ describe('🧪 Suite de Pruebas - Módulo de Autenticación', () => {
             
             expect(res.statusCode).toBe(400);
             expect(res.body.error).toBe('Falta ID de usuario');
+        });
+
+        it('Debería manejar error interno de la DB en logout (Status 500)', async () => {
+            db.query.mockRejectedValueOnce(new Error('DB Error'));
+
+            const res = await request(app)
+                .post('/api/logout')
+                .send({ id_usuario: 1 });
+
+            expect(res.statusCode).toBe(500);
+            expect(res.body.error).toBe('Error en Logout');
         });
     });
 });

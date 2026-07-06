@@ -1,0 +1,443 @@
+<html><head><meta charset="utf-8"/><title>Reporte de Pruebas Wayra Backend</title><style type="text/css">:root {
+  --text-primary: #111;
+  --text-secondary: #4f4f4f;
+  --success: #006633;
+  --success-bright: #80ffbf;
+  --danger: #cc071e;
+  --danger-bright: #fbdfe0;
+  --warning: #995c00;
+  --warning-bright: #ffeea8;
+  --panel: #eee;
+  --border: #949494;
+  --disabled: #6b6b6b;
+}
+
+html,
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  margin: 0;
+  padding: 0;
+  color: var(--text-primary);
+}
+body {
+  padding: 2rem 1rem;
+}
+.jesthtml-content {
+  margin: 0 auto;
+  max-width: 70rem;
+}
+header {
+  display: flex;
+  align-items: center;
+}
+#title {
+  margin: 0;
+  flex-grow: 1;
+}
+#logo {
+  height: 4rem;
+}
+#timestamp {
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+}
+
+#metadata-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.additional-information-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+}
+
+/** SUMMARY */
+#summary {
+  color: var(--text-primary);
+  display: flex;
+  font-family: monospace;
+  font-size: 1rem;
+}
+#summary > div {
+  margin-right: 0.5rem;
+  background: var(--panel);
+  padding: 1rem;
+  min-width: 15rem;
+}
+#summary > div:last-child {
+  margin-right: 0;
+}
+@media only screen and (max-width: 720px) {
+  #summary {
+    flex-direction: column;
+  }
+  #summary > div {
+    margin-right: 0;
+    margin-top: 1rem;
+  }
+  #summary > div:first-child {
+    margin-top: 0;
+  }
+}
+
+.summary-total {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+.summary-passed {
+  color: var(--success);
+  border-left: 0.4rem solid var(--success);
+  padding-left: 0.5rem;
+  margin-bottom: 0.15rem;
+}
+.summary-failed,
+.summary-obsolete-snapshots {
+  color: var(--danger);
+  border-left: 0.4rem solid var(--danger);
+  padding-left: 0.5rem;
+  margin-bottom: 0.15rem;
+}
+.summary-pending {
+  color: var(--warning);
+  border-left: 0.4rem solid var(--warning);
+  padding-left: 0.5rem;
+  margin-bottom: 0.15rem;
+}
+.summary-empty {
+  color: var(--disabled);
+  border-left: 0.4rem solid var(--disabled);
+  margin-bottom: 0.15rem;
+}
+
+.test-result {
+  padding: 1rem;
+  margin-bottom: 0.25rem;
+}
+.test-result:last-child {
+  border: 0;
+}
+.test-result.passed {
+  background-color: var(--success-bright);
+  color: var(--success);
+}
+.test-result.failed {
+  background-color: var(--danger-bright);
+  color: var(--danger);
+}
+.test-result.pending {
+  background-color: var(--warning-bright);
+  color: var(--warning);
+}
+
+.test-info {
+  display: flex;
+  justify-content: space-between;
+}
+.test-suitename {
+  width: 20%;
+  text-align: left;
+  font-weight: bold;
+  word-break: break-word;
+}
+.test-title {
+  width: 40%;
+  text-align: left;
+  font-style: italic;
+}
+.test-status {
+  width: 20%;
+  text-align: right;
+}
+.test-duration {
+  width: 10%;
+  text-align: right;
+  font-size: 0.85rem;
+}
+
+.failureMessages {
+  padding: 0 1rem;
+  margin-top: 1rem;
+  border-top: 1px dashed var(--danger);
+}
+.failureMessages.suiteFailure {
+  border-top: none;
+}
+.failureMsg {
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+}
+
+.suite-container {
+  margin-bottom: 1rem;
+}
+.suite-info {
+  padding: 1rem;
+  background-color: var(--panel);
+  color: var(--text-secondary);
+  border: 0.15rem solid;
+  border-color: var(--panel);
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+.suite-info:hover {
+  border-color: var(--border);
+  cursor: pointer;
+}
+.suite-info .suite-path {
+  word-break: break-all;
+  flex-grow: 1;
+  font-family: monospace;
+  font-size: 1rem;
+}
+.suite-info .suite-time {
+  margin-left: 1rem;
+  padding: 0.2rem 0.3rem;
+  font-size: 0.85rem;
+}
+.suite-info .suite-time.warn {
+  background-color: var(--danger);
+  color: #fff;
+}
+.suite-info:before {
+  content: "\2303";
+  display: inline-block;
+  margin-right: 1rem;
+  transform: rotate(180deg) translateY(0.15rem);
+}
+.suite-container[open] .suite-info:before {
+  transform: rotate(0deg) translateY(0.15rem);
+}
+
+/* CONSOLE LOGS */
+.suite-consolelog {
+  margin-bottom: 0.25rem;
+  padding: 1rem;
+  background-color: var(--panel);
+}
+.suite-consolelog-header {
+  font-weight: bold;
+}
+.suite-consolelog-item {
+  padding: 0.5rem;
+}
+.suite-consolelog-item pre {
+  margin: 0.5rem 0;
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+}
+.suite-consolelog-item-origin {
+  color: var(--text-secondary);
+  font-weight: bold;
+}
+.suite-consolelog-item-message {
+  color: var(--text-primary);
+  font-size: 1rem;
+  padding: 0 0.5rem;
+}
+
+/* OBSOLETE SNAPSHOTS */
+.suite-obsolete-snapshots {
+  margin-bottom: 0.25rem;
+  padding: 1rem;
+  background-color: var(--danger-bright);
+  color: var(--danger);
+}
+.suite-obsolete-snapshots-header {
+  font-weight: bold;
+}
+.suite-obsolete-snapshots-item {
+  padding: 0.5rem;
+}
+.suite-obsolete-snapshots-item pre {
+  margin: 0.5rem 0;
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+}
+.suite-obsolete-snapshots-item-message {
+  color: var(--text-primary);
+  font-size: 1rem;
+  padding: 0 0.5rem;
+}
+</style></head><body><main class="jesthtml-content"><header><h1 id="title">Reporte de Pruebas Wayra Backend</h1></header><section id="metadata-container"><div id="timestamp">Started: 2026-07-05 23:27:12</div><div id="summary"><div id="suite-summary"><div class="summary-total">Suites (9)</div><div class="summary-passed ">9 passed</div><div class="summary-failed  summary-empty">0 failed</div><div class="summary-pending  summary-empty">0 pending</div></div><div id="test-summary"><div class="summary-total">Tests (78)</div><div class="summary-passed ">78 passed</div><div class="summary-failed  summary-empty">0 failed</div><div class="summary-pending  summary-empty">0 pending</div></div></div></section><details id="suite-1" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">D:\Calidad Pruebas y software\Wayra_Web_Backend\tests\index.test.js</div><div class="suite-time warn">15.683s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">Servidor Principal (index.js)</div><div class="test-title">Debería iniciar el servidor cuando NODE_ENV no es test</div><div class="test-status">passed</div><div class="test-duration">7.54s</div></div></div></div><div class="suite-consolelog"><div class="suite-consolelog-header">Console Log</div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at _log (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:131:11)
+    at Object.configDotenv (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:309:5)
+    at Object.config (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:323:25)
+    at config (D:\Calidad Pruebas y software\Wayra_Web_Backend\config\db.js:4:8)
+    at SourceTextModule.evaluate (node:internal/vm/module:219:26)
+    at EsmLoader.linkAndEvaluateModule (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runtime\build\index.js:1201:47)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at importModuleDynamicallyWrapper (node:internal/vm/module:484:15)
+    at Object.&lt;anonymous&gt; (D:\Calidad Pruebas y software\Wayra_Web_Backend\tests\index.test.js:14:24)</pre><pre class="suite-consolelog-item-message">◇ injecting env (1) from .env // tip: ◈ encrypted .env [www.dotenvx.com]</pre></div></div></details><details id="suite-2" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">D:\Calidad Pruebas y software\Wayra_Web_Backend\tests\producto.test.js</div><div class="suite-time warn">17.746s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; GET /api/admin/usuarios (Staff Reactivo)</div><div class="test-title">Debería devolver la lista de staff con sus métricas calculadas (Status 200)</div><div class="test-status">passed</div><div class="test-duration">0.285s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; GET /api/asignar-mozo</div><div class="test-title">Debería devolver un mozo disponible</div><div class="test-status">passed</div><div class="test-duration">0.051s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; GET /api/asignar-mozo</div><div class="test-title">Debería avisar si no hay mozos disponibles</div><div class="test-status">passed</div><div class="test-duration">0.063s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; POST &amp; PUT /api/admin/usuarios</div><div class="test-title">Debería crear un usuario nuevo</div><div class="test-status">passed</div><div class="test-duration">0.353s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; POST &amp; PUT /api/admin/usuarios</div><div class="test-title">Debería actualizar un usuario con cambio de contraseña</div><div class="test-status">passed</div><div class="test-duration">0.032s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; POST &amp; PUT /api/admin/usuarios</div><div class="test-title">Debería eliminar un usuario</div><div class="test-status">passed</div><div class="test-duration">0.038s</div></div></div></div><div class="suite-consolelog"><div class="suite-consolelog-header">Console Log</div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at _log (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:131:11)
+    at Object.configDotenv (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:309:5)
+    at Object.config (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:323:25)
+    at config (D:\Calidad Pruebas y software\Wayra_Web_Backend\config\db.js:4:8)
+    at SourceTextModule.evaluate (node:internal/vm/module:219:26)
+    at EsmLoader.linkAndEvaluateModule (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runtime\build\index.js:1201:47)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at jestAdapter (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\runner.js:94:5)
+    at runTestInternal (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:276:16)
+    at runTest (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:344:7)
+    at Object.worker (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:498:12)</pre><pre class="suite-consolelog-item-message">◇ injecting env (1) from .env // tip: ◈ secrets for agents [www.dotenvx.com]</pre></div></div></details><details id="suite-3" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">D:\Calidad Pruebas y software\Wayra_Web_Backend\tests\producto2.test.js</div><div class="suite-time warn">17.358s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Productos &gt; GET /api/productos</div><div class="test-title">Debería retornar los productos activos (Status 200)</div><div class="test-status">passed</div><div class="test-duration">0.293s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Productos &gt; GET /api/productos</div><div class="test-title">Debería manejar error en BD retornando array vacío</div><div class="test-status">passed</div><div class="test-duration">0.06s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Productos &gt; GET /api/admin/productos/todos</div><div class="test-title">Debería retornar todos los productos (Status 200)</div><div class="test-status">passed</div><div class="test-duration">0.042s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Productos &gt; GET /api/admin/productos/todos</div><div class="test-title">Debería atrapar el error 500 si la base de datos falla</div><div class="test-status">passed</div><div class="test-duration">0.025s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Productos &gt; POST /api/admin/productos</div><div class="test-title">Debería crear un producto con éxito (Status 200)</div><div class="test-status">passed</div><div class="test-duration">0.521s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Productos &gt; POST /api/admin/productos</div><div class="test-title">Debería atrapar el error 500 al fallar la creación</div><div class="test-status">passed</div><div class="test-duration">0.027s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Productos &gt; PUT /api/admin/productos/:id</div><div class="test-title">Debería actualizar los campos dinámicos correctamente (Status 200)</div><div class="test-status">passed</div><div class="test-duration">0.023s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Productos &gt; PUT /api/admin/productos/:id</div><div class="test-title">Debería atrapar el error 500 al fallar la actualización</div><div class="test-status">passed</div><div class="test-duration">0.028s</div></div></div></div><div class="suite-consolelog"><div class="suite-consolelog-header">Console Log</div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at _log (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:131:11)
+    at Object.configDotenv (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:309:5)
+    at Object.config (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:323:25)
+    at config (D:\Calidad Pruebas y software\Wayra_Web_Backend\config\db.js:4:8)
+    at SourceTextModule.evaluate (node:internal/vm/module:219:26)
+    at EsmLoader.linkAndEvaluateModule (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runtime\build\index.js:1201:47)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at jestAdapter (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\runner.js:94:5)
+    at runTestInternal (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:276:16)
+    at runTest (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:344:7)
+    at Object.worker (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:498:12)</pre><pre class="suite-consolelog-item-message">◇ injecting env (1) from .env // tip: ◈ encrypted .env [www.dotenvx.com]</pre></div></div></details><details id="suite-4" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">D:\Calidad Pruebas y software\Wayra_Web_Backend\tests\mesa.test.js</div><div class="suite-time warn">18.595s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Mesas &gt; GET /api/mesas</div><div class="test-title">Debería obtener todas las mesas (Status 200)</div><div class="test-status">passed</div><div class="test-duration">0.298s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Mesas &gt; GET /api/mesas</div><div class="test-title">Debería retornar 500 si la DB falla</div><div class="test-status">passed</div><div class="test-duration">0.21s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Mesas &gt; PUT /api/mesas/:id/liberar</div><div class="test-title">Debería liberar una mesa correctamente</div><div class="test-status">passed</div><div class="test-duration">0.03s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Mesas &gt; PUT /api/mesas/:id/liberar</div><div class="test-title">Debería lanzar error 500 si la mesa no existe</div><div class="test-status">passed</div><div class="test-duration">0.038s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Mesas &gt; POST /api/mesas/asignar</div><div class="test-title">Debería asignar un mozo a una mesa</div><div class="test-status">passed</div><div class="test-duration">0.541s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Mesas &gt; POST /api/mesas/asignar</div><div class="test-title">Debería rechazar por límite de mesas (Status 403)</div><div class="test-status">passed</div><div class="test-duration">0.034s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Mesas &gt; POST /api/mesas/asignar</div><div class="test-title">Debería retornar 400 si faltan datos en el body</div><div class="test-status">passed</div><div class="test-duration">0.047s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Mesas &gt; POST /api/mesas/asignar</div><div class="test-title">Debería retornar 500 si hay error de DB en asignación</div><div class="test-status">passed</div><div class="test-duration">0.02s</div></div></div></div><div class="suite-consolelog"><div class="suite-consolelog-header">Console Log</div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at _log (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:131:11)
+    at Object.configDotenv (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:309:5)
+    at Object.config (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:323:25)
+    at config (D:\Calidad Pruebas y software\Wayra_Web_Backend\config\db.js:4:8)
+    at SourceTextModule.evaluate (node:internal/vm/module:219:26)
+    at EsmLoader.linkAndEvaluateModule (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runtime\build\index.js:1201:47)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at jestAdapter (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\runner.js:94:5)
+    at runTestInternal (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:276:16)
+    at runTest (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:344:7)
+    at Object.worker (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:498:12)</pre><pre class="suite-consolelog-item-message">◇ injecting env (1) from .env // tip: ⌘ suppress logs { quiet: true }</pre></div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at error (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\mesaController.js:15:17)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)</pre><pre class="suite-consolelog-item-message">❌ ERROR EN CONTROLADOR DE MESAS: Error: Error en Base de Datos al obtener mesas: Fallo de conexión
+    at Module.obtenerTodasLasMesas (D:\Calidad Pruebas y software\Wayra_Web_Backend\services\mesaService.js:17:15)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at obtenerMesas (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\mesaController.js:12:23)</pre></div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at error (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\mesaController.js:29:17)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)</pre><pre class="suite-consolelog-item-message">❌ ERROR AL LIBERAR MESA: Error: Error en Base de Datos al liberar mesa: La mesa no existe o no pudo ser liberada.
+    at Module.liberarMesa (D:\Calidad Pruebas y software\Wayra_Web_Backend\services\mesaService.js:39:15)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at liberarMesa (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\mesaController.js:26:27)</pre></div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at error (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\mesaController.js:49:17)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)</pre><pre class="suite-consolelog-item-message">❌ ERROR AL ASIGNAR MESA: Error: El mozo ya tiene el límite de 4 mesas
+    at Module.asignarMozoAMesa (D:\Calidad Pruebas y software\Wayra_Web_Backend\services\mesaService.js:59:33)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at asignarMozo (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\mesaController.js:45:27) {
+  code: 'LIMITE_MESAS_ALCANZADO'
+}</pre></div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at error (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\mesaController.js:49:17)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)</pre><pre class="suite-consolelog-item-message">❌ ERROR AL ASIGNAR MESA: Error: Error en Base de Datos al asignar mesa: DB Error Asignación
+    at Module.asignarMozoAMesa (D:\Calidad Pruebas y software\Wayra_Web_Backend\services\mesaService.js:78:15)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at asignarMozo (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\mesaController.js:45:27)</pre></div></div></details><details id="suite-5" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">D:\Calidad Pruebas y software\Wayra_Web_Backend\tests\reserva.test.js</div><div class="suite-time warn">18.676s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Reservas &gt; GET /api/reservas</div><div class="test-title">Debería obtener las reservas por fecha</div><div class="test-status">passed</div><div class="test-duration">0.218s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Reservas &gt; GET /api/reservas</div><div class="test-title">Debería manejar error 500 al listar</div><div class="test-status">passed</div><div class="test-duration">0.027s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Reservas &gt; POST /api/reservas (Transaccional)</div><div class="test-title">Debería crear la reserva, actualizar la mesa y hacer commit</div><div class="test-status">passed</div><div class="test-duration">0.274s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Reservas &gt; POST /api/reservas (Transaccional)</div><div class="test-title">Debería hacer rollback si falla la actualización de la mesa</div><div class="test-status">passed</div><div class="test-duration">0.29s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Reservas &gt; PUT /api/reservas/:id/checkin</div><div class="test-title">Debería confirmar la reserva (Check-In) y auditar</div><div class="test-status">passed</div><div class="test-duration">0.064s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Reservas &gt; PUT /api/reservas/:id/checkin</div><div class="test-title">Debería manejar error 500 en checkin</div><div class="test-status">passed</div><div class="test-duration">0.023s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Reservas &gt; PUT /api/reservas/:id/anular</div><div class="test-title">Debería anular la reserva</div><div class="test-status">passed</div><div class="test-duration">0.022s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Reservas &gt; PUT /api/reservas/:id/anular</div><div class="test-title">Debería manejar error 500 en anular</div><div class="test-status">passed</div><div class="test-duration">0.024s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Reservas &gt; Rutas de Consultas Menores (GETs)</div><div class="test-title">/ocupadas - Debería retornar las horas reservadas</div><div class="test-status">passed</div><div class="test-duration">0.039s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Reservas &gt; Rutas de Consultas Menores (GETs)</div><div class="test-title">/conteo-mensual - Debería retornar agrupciones</div><div class="test-status">passed</div><div class="test-duration">0.018s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Reservas &gt; Rutas de Consultas Menores (GETs)</div><div class="test-title">/hoy - Debería retornar las reservas del mozo para hoy</div><div class="test-status">passed</div><div class="test-duration">0.019s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Reservas &gt; Rutas de Consultas Menores (GETs)</div><div class="test-title">/ocupadas - Debería retornar 500 si DB falla</div><div class="test-status">passed</div><div class="test-duration">0.016s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Reservas &gt; Rutas de Consultas Menores (GETs)</div><div class="test-title">/conteo-mensual - Debería retornar 500 si DB falla</div><div class="test-status">passed</div><div class="test-duration">0.016s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Reservas &gt; Rutas de Consultas Menores (GETs)</div><div class="test-title">/hoy - Debería manejar error de DB retornando arreglo vacío</div><div class="test-status">passed</div><div class="test-duration">0.02s</div></div></div></div><div class="suite-consolelog"><div class="suite-consolelog-header">Console Log</div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at _log (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:131:11)
+    at Object.configDotenv (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:309:5)
+    at Object.config (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:323:25)
+    at config (D:\Calidad Pruebas y software\Wayra_Web_Backend\config\db.js:4:8)
+    at SourceTextModule.evaluate (node:internal/vm/module:219:26)
+    at EsmLoader.linkAndEvaluateModule (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runtime\build\index.js:1201:47)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at jestAdapter (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\runner.js:94:5)
+    at runTestInternal (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:276:16)
+    at runTest (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:344:7)
+    at Object.worker (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:498:12)</pre><pre class="suite-consolelog-item-message">◇ injecting env (1) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }</pre></div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at error (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\reservaController.js:26:17)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)</pre><pre class="suite-consolelog-item-message">❌ Error en Transacción de Reserva: Error: Error DB (Crear Reserva Transaccional): Mesa bloqueada
+    at Module.crearReserva (D:\Calidad Pruebas y software\Wayra_Web_Backend\services\reservaService.js:66:15)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at crearReserva (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\reservaController.js:23:27)</pre></div></div></details><details id="suite-6" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">D:\Calidad Pruebas y software\Wayra_Web_Backend\tests\pedido.test.js</div><div class="suite-time warn">19.26s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Pedidos &gt; GET /api/pedidos/hoy</div><div class="test-title">Debería retornar status 200 y la lista de pedidos del día</div><div class="test-status">passed</div><div class="test-duration">0.425s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Pedidos &gt; GET /api/pedidos/hoy</div><div class="test-title">Debería manejar errores de base de datos devolviendo un array vacío (Status 500)</div><div class="test-status">passed</div><div class="test-duration">0.074s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Pedidos &gt; POST /api/pedidos</div><div class="test-title">Debería crear un pedido exitosamente (Status 200)</div><div class="test-status">passed</div><div class="test-duration">0.445s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Pedidos &gt; POST /api/pedidos</div><div class="test-title">Debería bloquear la creación si el mozo excede el límite de mesas (Status 403)</div><div class="test-status">passed</div><div class="test-duration">0.135s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Pedidos &gt; POST /api/pedidos</div><div class="test-title">Debería rechazar un pedido sin items (Status 400)</div><div class="test-status">passed</div><div class="test-duration">0.036s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Pedidos &gt; POST /api/pedidos</div><div class="test-title">Debería retornar 500 si hay error interno al crear</div><div class="test-status">passed</div><div class="test-duration">0.083s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Pedidos &gt; PUT /api/pedidos/:id/checkout</div><div class="test-title">Debería procesar el pago correctamente y liberar la mesa (Status 200)</div><div class="test-status">passed</div><div class="test-duration">0.03s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Pedidos &gt; PUT /api/pedidos/:id/checkout</div><div class="test-title">Debería retornar 500 si hay error en checkout</div><div class="test-status">passed</div><div class="test-duration">0.027s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Pedidos &gt; Rutas Secundarias de Pedidos (Items y Boleta)</div><div class="test-title">POST /api/pedidos/:id/agregar - Debería agregar un item</div><div class="test-status">passed</div><div class="test-duration">0.028s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Pedidos &gt; Rutas Secundarias de Pedidos (Items y Boleta)</div><div class="test-title">DELETE /api/pedidos/detalle/:id_detalle - Debería eliminar un item</div><div class="test-status">passed</div><div class="test-duration">0.027s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Pedidos &gt; Rutas Secundarias de Pedidos (Items y Boleta)</div><div class="test-title">PUT /api/pedidos/:id/observacion - Debería actualizar observación</div><div class="test-status">passed</div><div class="test-duration">0.021s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Pedidos &gt; Rutas Secundarias de Pedidos (Items y Boleta)</div><div class="test-title">GET /api/admin/boleta/:id_pedido - Debería generar la boleta (Status 200)</div><div class="test-status">passed</div><div class="test-duration">0.015s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Pedidos &gt; Rutas Secundarias de Pedidos (Items y Boleta)</div><div class="test-title">GET /api/admin/boleta/:id_pedido - Debería devolver 404 si no existe</div><div class="test-status">passed</div><div class="test-duration">0.016s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Pedidos &gt; Rutas Secundarias de Pedidos (Items y Boleta)</div><div class="test-title">Debería manejar 500 en agregar item</div><div class="test-status">passed</div><div class="test-duration">0.022s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Pedidos &gt; Rutas Secundarias de Pedidos (Items y Boleta)</div><div class="test-title">Debería manejar 500 en eliminar item</div><div class="test-status">passed</div><div class="test-duration">0.014s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Pedidos &gt; Rutas Secundarias de Pedidos (Items y Boleta)</div><div class="test-title">Debería manejar 500 en actualizar observacion</div><div class="test-status">passed</div><div class="test-duration">0.018s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Pedidos &gt; Rutas Secundarias de Pedidos (Items y Boleta)</div><div class="test-title">Debería manejar 500 en boleta</div><div class="test-status">passed</div><div class="test-duration">0.021s</div></div></div></div><div class="suite-consolelog"><div class="suite-consolelog-header">Console Log</div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at _log (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:131:11)
+    at Object.configDotenv (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:309:5)
+    at Object.config (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:323:25)
+    at config (D:\Calidad Pruebas y software\Wayra_Web_Backend\config\db.js:4:8)
+    at SourceTextModule.evaluate (node:internal/vm/module:219:26)
+    at EsmLoader.linkAndEvaluateModule (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runtime\build\index.js:1201:47)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at jestAdapter (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\runner.js:94:5)
+    at runTestInternal (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:276:16)
+    at runTest (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:344:7)
+    at Object.worker (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:498:12)</pre><pre class="suite-consolelog-item-message">◇ injecting env (1) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }</pre></div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at error (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\pedidoController.js:28:17)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)</pre><pre class="suite-consolelog-item-message">❌ ERROR TRANSACCIÓN PEDIDO: Error: Límite de 4 mesas alcanzado por este mozo.
+    at Module.crearPedido (D:\Calidad Pruebas y software\Wayra_Web_Backend\services\pedidoService.js:63:25)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at crearPedido (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\pedidoController.js:25:27) {
+  code: 'LIMITE_MESAS'
+}</pre></div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at error (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\pedidoController.js:28:17)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)</pre><pre class="suite-consolelog-item-message">❌ ERROR TRANSACCIÓN PEDIDO: Error: DB Error
+    at Object.&lt;anonymous&gt; (D:\Calidad Pruebas y software\Wayra_Web_Backend\tests\pedido.test.js:98:56)
+    at Promise.finally.completed (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:1561:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:1501:10)
+    at _callCircusTest (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:1011:40)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at _runTest (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:951:3)
+    at D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:853:7
+    at _runTestsForDescribeBlock (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:866:11)
+    at _runTestsForDescribeBlock (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:861:11)
+    at _runTestsForDescribeBlock (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:861:11)
+    at run (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:765:3)
+    at runAndTransformResultsToJestFormat (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:1993:21)
+    at jestAdapter (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\runner.js:111:19)
+    at runTestInternal (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:276:16)
+    at runTest (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:344:7)
+    at Object.worker (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:498:12)</pre></div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at error (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\pedidoController.js:60:17)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)</pre><pre class="suite-consolelog-item-message">❌ ERROR CHECKOUT: Error: DB Error checkout
+    at Object.&lt;anonymous&gt; (D:\Calidad Pruebas y software\Wayra_Web_Backend\tests\pedido.test.js:122:56)
+    at Promise.finally.completed (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:1561:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:1501:10)
+    at _callCircusTest (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:1011:40)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at _runTest (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:951:3)
+    at D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:853:7
+    at _runTestsForDescribeBlock (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:866:11)
+    at _runTestsForDescribeBlock (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:861:11)
+    at _runTestsForDescribeBlock (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:861:11)
+    at run (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:765:3)
+    at runAndTransformResultsToJestFormat (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\jestAdapterInit.js:1993:21)
+    at jestAdapter (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\runner.js:111:19)
+    at runTestInternal (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:276:16)
+    at runTest (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:344:7)
+    at Object.worker (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:498:12)</pre></div></div></details><details id="suite-7" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">D:\Calidad Pruebas y software\Wayra_Web_Backend\tests\usuario.test.js</div><div class="suite-time warn">19.72s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; GET /api/admin/usuarios (Staff Reactivo)</div><div class="test-title">Debería devolver la lista de staff con sus métricas calculadas (Status 200)</div><div class="test-status">passed</div><div class="test-duration">0.425s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; GET /api/admin/usuarios (Staff Reactivo)</div><div class="test-title">Debería manejar error 500 al listar</div><div class="test-status">passed</div><div class="test-duration">0.119s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; GET /api/asignar-mozo</div><div class="test-title">Debería devolver un mozo disponible</div><div class="test-status">passed</div><div class="test-duration">0.021s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; GET /api/asignar-mozo</div><div class="test-title">Debería avisar si no hay mozos disponibles</div><div class="test-status">passed</div><div class="test-duration">0.027s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; GET /api/asignar-mozo</div><div class="test-title">Debería manejar error 500 al asignar mozo</div><div class="test-status">passed</div><div class="test-duration">0.034s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; POST &amp; PUT /api/admin/usuarios</div><div class="test-title">Debería crear un usuario nuevo</div><div class="test-status">passed</div><div class="test-duration">0.284s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; POST &amp; PUT /api/admin/usuarios</div><div class="test-title">Debería actualizar un usuario con cambio de contraseña</div><div class="test-status">passed</div><div class="test-duration">0.043s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; POST &amp; PUT /api/admin/usuarios</div><div class="test-title">Debería eliminar un usuario</div><div class="test-status">passed</div><div class="test-duration">0.075s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; POST &amp; PUT /api/admin/usuarios</div><div class="test-title">Debería manejar error 500 al crear usuario sin datos</div><div class="test-status">passed</div><div class="test-duration">0.838s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; POST &amp; PUT /api/admin/usuarios</div><div class="test-title">Debería manejar error 500 en crear usuario</div><div class="test-status">passed</div><div class="test-duration">0.013s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; POST &amp; PUT /api/admin/usuarios</div><div class="test-title">Debería manejar error 500 en actualizar usuario</div><div class="test-status">passed</div><div class="test-duration">0.014s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Usuarios &gt; POST &amp; PUT /api/admin/usuarios</div><div class="test-title">Debería manejar error 500 en eliminar usuario</div><div class="test-status">passed</div><div class="test-duration">0.012s</div></div></div></div><div class="suite-consolelog"><div class="suite-consolelog-header">Console Log</div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at _log (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:131:11)
+    at Object.configDotenv (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:309:5)
+    at Object.config (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:323:25)
+    at config (D:\Calidad Pruebas y software\Wayra_Web_Backend\config\db.js:4:8)
+    at SourceTextModule.evaluate (node:internal/vm/module:219:26)
+    at EsmLoader.linkAndEvaluateModule (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runtime\build\index.js:1201:47)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at jestAdapter (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\runner.js:94:5)
+    at runTestInternal (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:276:16)
+    at runTest (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:344:7)
+    at Object.worker (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:498:12)</pre><pre class="suite-consolelog-item-message">◇ injecting env (1) from .env // tip: ⌘ suppress logs { quiet: true }</pre></div></div></details><details id="suite-8" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">D:\Calidad Pruebas y software\Wayra_Web_Backend\tests\dashboard.test.js</div><div class="suite-time">3.826s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Dashboard Analytics &gt; GET /api/admin/metrics</div><div class="test-title">Debería retornar las métricas completas con insight de alta demanda (Status 200)</div><div class="test-status">passed</div><div class="test-duration">0.112s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Dashboard Analytics &gt; GET /api/admin/metrics</div><div class="test-title">Debería detonar la alerta operativa si las ventas son menores a 300 (Status 200)</div><div class="test-status">passed</div><div class="test-duration">0.022s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Dashboard Analytics &gt; GET /api/admin/metrics</div><div class="test-title">Debería devolver error 500 si la base de datos de métricas falla</div><div class="test-status">passed</div><div class="test-duration">0.017s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Dashboard Analytics &gt; GET /api/admin/historial</div><div class="test-title">Debería retornar el historial de ventas por fecha (Status 200)</div><div class="test-status">passed</div><div class="test-duration">0.02s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Dashboard Analytics &gt; GET /api/admin/historial</div><div class="test-title">Debería manejar errores de DB en el historial (Status 500)</div><div class="test-status">passed</div><div class="test-duration">0.052s</div></div></div></div><div class="suite-consolelog"><div class="suite-consolelog-header">Console Log</div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at _log (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:131:11)
+    at Object.configDotenv (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:309:5)
+    at Object.config (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:323:25)
+    at config (D:\Calidad Pruebas y software\Wayra_Web_Backend\config\db.js:4:8)
+    at SourceTextModule.evaluate (node:internal/vm/module:219:26)
+    at EsmLoader.linkAndEvaluateModule (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runtime\build\index.js:1201:47)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at jestAdapter (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\runner.js:94:5)
+    at runTestInternal (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:276:16)
+    at runTest (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:344:7)
+    at Object.worker (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:498:12)</pre><pre class="suite-consolelog-item-message">◇ injecting env (1) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }</pre></div></div></details><details id="suite-9" class="suite-container" open=""><summary class="suite-info"><div class="suite-path">D:\Calidad Pruebas y software\Wayra_Web_Backend\tests\auth.test.js</div><div class="suite-time">2.662s</div></summary><div class="suite-tests"><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Autenticación &gt; POST /api/login</div><div class="test-title">Debería iniciar sesión correctamente (Status 200)</div><div class="test-status">passed</div><div class="test-duration">0.168s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Autenticación &gt; POST /api/login</div><div class="test-title">Debería rechazar login con credenciales incorrectas (Status 401)</div><div class="test-status">passed</div><div class="test-duration">0.062s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Autenticación &gt; POST /api/login</div><div class="test-title">Debería rechazar la petición si faltan datos (Status 400)</div><div class="test-status">passed</div><div class="test-duration">0.02s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Autenticación &gt; POST /api/login</div><div class="test-title">Debería manejar error interno de la DB en login (Status 500)</div><div class="test-status">passed</div><div class="test-duration">0.017s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Autenticación &gt; POST /api/logout</div><div class="test-title">Debería cerrar sesión correctamente (Status 200)</div><div class="test-status">passed</div><div class="test-duration">0.012s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Autenticación &gt; POST /api/logout</div><div class="test-title">Debería dar error si no se envía el ID (Status 400)</div><div class="test-status">passed</div><div class="test-duration">0.009s</div></div></div><div class="test-result passed"><div class="test-info"><div class="test-suitename">🧪 Suite de Pruebas - Módulo de Autenticación &gt; POST /api/logout</div><div class="test-title">Debería manejar error interno de la DB en logout (Status 500)</div><div class="test-status">passed</div><div class="test-duration">0.016s</div></div></div></div><div class="suite-consolelog"><div class="suite-consolelog-header">Console Log</div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at _log (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:131:11)
+    at Object.configDotenv (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:309:5)
+    at Object.config (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\dotenv\lib\main.js:323:25)
+    at config (D:\Calidad Pruebas y software\Wayra_Web_Backend\config\db.js:4:8)
+    at SourceTextModule.evaluate (node:internal/vm/module:219:26)
+    at EsmLoader.linkAndEvaluateModule (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runtime\build\index.js:1201:47)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at jestAdapter (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-circus\build\runner.js:94:5)
+    at runTestInternal (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:276:16)
+    at runTest (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:344:7)
+    at Object.worker (D:\Calidad Pruebas y software\Wayra_Web_Backend\node_modules\jest-runner\build\testWorker.js:498:12)</pre><pre class="suite-consolelog-item-message">◇ injecting env (1) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }</pre></div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at error (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\authController.js:19:17)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)</pre><pre class="suite-consolelog-item-message">❌ ERROR Controlador Auth (Login): Error: Usuario o clave incorrecta
+    at Module.loginUsuario (D:\Calidad Pruebas y software\Wayra_Web_Backend\services\authService.js:14:27)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at login (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\authController.js:15:25) {
+  code: 'CREDENTIALS_INVALID'
+}</pre></div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at error (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\authController.js:19:17)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)</pre><pre class="suite-consolelog-item-message">❌ ERROR Controlador Auth (Login): Error: Error en Base de Datos durante el login: DB Error
+    at Module.loginUsuario (D:\Calidad Pruebas y software\Wayra_Web_Backend\services\authService.js:28:15)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at login (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\authController.js:15:25)</pre></div><div class="suite-consolelog-item"><pre class="suite-consolelog-item-origin">    at error (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\authController.js:42:17)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)</pre><pre class="suite-consolelog-item-message">❌ ERROR Controlador Auth (Logout): Error: Error en Base de Datos durante el logout: DB Error
+    at Module.logoutUsuario (D:\Calidad Pruebas y software\Wayra_Web_Backend\services\authService.js:40:15)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at logout (D:\Calidad Pruebas y software\Wayra_Web_Backend\controllers\authController.js:38:27)</pre></div></div></details></main></body></html>
